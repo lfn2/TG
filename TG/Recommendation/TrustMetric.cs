@@ -8,44 +8,88 @@ namespace TG.Recommendation
 {
 	public class TrustMetric
 	{
-		public static Dictionary<int, Dictionary<int, double>> EstimateTrust(Dictionary<int, Dictionary<int, double>> trustMatrix, int maxDistance)
+		public static Dictionary<int, Dictionary<int, float>> EstimateTrust(Dictionary<int, Dictionary<int, float>> trustMatrix, int maxDistance)
 		{
-			Dictionary<int, Dictionary<int, double>> estimateMatrix = new Dictionary<int, Dictionary<int, double>>();
+			Dictionary<int, Dictionary<int, float>> estimateMatrix = new Dictionary<int, Dictionary<int, float>>();
 
 			foreach (int sourceUser in trustMatrix.Keys)
 			{
-				Dictionary<int, int> queueItems = new Dictionary<int, int>();
-				Queue<int> queue = new Queue<int>();
+				HashSet<int> queueItems = new HashSet<int>();
+				Queue<int> distanceQueue = new Queue<int>();
+				Queue<int> userQueue = new Queue<int>();
 
 				foreach (int trustedUser in trustMatrix[sourceUser].Keys)
-					if (!queueItems.ContainsKey(trustedUser))
+					if (!queueItems.Contains(trustedUser))
 					{
-						queue.Enqueue(trustedUser);
-						queueItems.Add(trustedUser, 1);
+						userQueue.Enqueue(trustedUser);
+						distanceQueue.Enqueue(1);
+						queueItems.Add(trustedUser);
 					}
 
-				while (queue.Count != 0)
+				while (userQueue.Count != 0)
 				{
-					int user = queue.Dequeue();
-					int distance = queueItems[user];
+					int user = userQueue.Dequeue();
+					int distance = distanceQueue.Dequeue();
 
 					if (!estimateMatrix.ContainsKey(sourceUser))
-						estimateMatrix[sourceUser] = new Dictionary<int, double>();
+						estimateMatrix[sourceUser] = new Dictionary<int, float>();
 
-					estimateMatrix[sourceUser][user] = (double) (maxDistance - distance + 1) / maxDistance;
+					estimateMatrix[sourceUser][user] = (float)(maxDistance - distance + 1) / maxDistance;
 
-					if (trustMatrix.ContainsKey(user))					
+					if (trustMatrix.ContainsKey(user))
 						foreach (int trustedUser in trustMatrix[user].Keys)
-							if (!queueItems.ContainsKey(trustedUser) && distance < maxDistance)
+							if (!queueItems.Contains(trustedUser) && distance < maxDistance)
 							{
-								queue.Enqueue(trustedUser);
-								queueItems.Add(trustedUser, distance + 1);
-							}	
+								userQueue.Enqueue(trustedUser);
+								distanceQueue.Enqueue(distance + 1);
+								queueItems.Add(trustedUser);
+							}
 				}
 
 			}
 
 			return estimateMatrix;
 		}
+
+		public static SparseMatrix<float> EstimateTrust2(SparseMatrix<float> trustMatrix, int maxDistance)
+		{
+			SparseMatrix<float> estimateMatrix = new SparseMatrix<float>();
+
+			foreach (int sourceUser in trustMatrix.GetRows().Keys)
+			{
+				HashSet<int> queueItems = new HashSet<int>();
+				Queue<int> distanceQueue = new Queue<int>();
+				Queue<int> userQueue = new Queue<int>();
+
+				foreach (int trustedUser in trustMatrix.GetRows()[sourceUser].Keys)
+					if (!queueItems.Contains(trustedUser))
+					{
+						userQueue.Enqueue(trustedUser);
+						distanceQueue.Enqueue(1);
+						queueItems.Add(trustedUser);
+					}
+
+				while (userQueue.Count != 0)
+				{
+					int user = userQueue.Dequeue();
+					int distance = distanceQueue.Dequeue();
+
+					if (estimateMatrix.GetAt(sourceUser, user) == default(float))
+						estimateMatrix.SetAt(sourceUser, user, (float)(maxDistance - distance + 1) / maxDistance);
+
+					if (trustMatrix.GetRows().ContainsKey(user))
+						foreach (int trustedUser in trustMatrix.GetRows()[user].Keys)
+							if (!queueItems.Contains(trustedUser) && distance < maxDistance)
+							{
+								userQueue.Enqueue(trustedUser);
+								distanceQueue.Enqueue(distance + 1);
+								queueItems.Add(trustedUser);
+							}
+				}
+			}
+
+			return estimateMatrix;
+		}
+
 	}
 }
