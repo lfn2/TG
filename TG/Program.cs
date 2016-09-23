@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TG.DataBuild;
+using TG.Pre_Processing;
 using TG.Recommendation;
 
 namespace TG
@@ -14,29 +15,50 @@ namespace TG
 	{
 		static void Main(string[] args)
 		{
+			Console.WriteLine("Choose the neighbourhood distance");
+
+			int neighbourhoodDistance = Convert.ToInt32(Console.ReadLine());
+
 			Stopwatch timer = new Stopwatch();
 			timer.Start();
-			//Dictionary<int, Dictionary<int, float>> userRatingsMatrix = DataBuilder.BuildMatrix(Resources.rating_data_file);
-			Dictionary<int, Dictionary<int, float>> trustMatrix = DataBuilder.BuildMatrix(Resources.trust_data_file);
+
+			//Matrix<int> userItemMatrix = DataBuilder.BuildMatrix3<int>(Resources.rating_data_file);
+			Matrix<float> trustMatrix = DataBuilder.BuildMatrix3<float>("trust_data.txt");
+
+			Matrix<float> estimatedTrustMatrix = TrustMatrixBuilder.BuildEstimatedTrustMatrix(trustMatrix, neighbourhoodDistance);	
+
+			WriteToTextFile("estimate_trust_" + neighbourhoodDistance + ".txt", trustMatrix);
 
 
-			Dictionary<int, Dictionary<int, float>> estimatedTrust = TrustMetric.EstimateTrust(trustMatrix, 3);
-			//SparseMatrix<float> sparseMatrix = DataBuilder.BuildMatrix2(Resources.trust_data_file);
+			//float prediction = BasicRS.PredictRating(userItemMatrix, trustMatrix, 1, 101);
 
-			//SparseMatrix<float> estimateMatrix = TrustMetric.EstimateTrust2(sparseMatrix, 3);
-
-			//using (StreamWriter sw = new StreamWriter("estimate_trust_3_2.txt"))
-			//	foreach (int user in estimateMatrix.GetRows().Keys)
-			//		foreach (int trustedUser in estimateMatrix.GetRows()[user].Keys)
-			//			sw.WriteLine((user) + " " + (trustedUser) + " " + estimateMatrix.GetAt(user, trustedUser));
-
-			using (StreamWriter sw = new StreamWriter("estimate_trust_3_2.txt"))
-				foreach (int user in estimatedTrust.Keys)
-					foreach (int trustedUser in estimatedTrust[user].Keys)
-						sw.WriteLine((user) + " " + (trustedUser) + " " + estimatedTrust[user][trustedUser]);
+			//Console.WriteLine("Rating predicted: " + prediction);
 
 			timer.Stop();
 			Console.WriteLine("Time: " + timer.Elapsed);
-		}		
+
+		}
+
+		public static void WriteToTextFile(string filePath, Matrix<float> matrix)
+		{
+			StringBuilder sb = new StringBuilder();
+			using (StreamWriter sw = new StreamWriter(filePath))
+			{
+				foreach (int user in matrix.Rows)
+					foreach (int trustedUser in matrix[user])
+					{
+						sb.Append(user);
+						sb.Append(" ");
+						sb.Append(trustedUser);
+						sb.Append(" ");
+						sb.Append(matrix[user, trustedUser]);
+						sb.AppendLine();
+					}
+
+				sw.Write(sb);
+			}
+				
+		}
+
 	}
 }
