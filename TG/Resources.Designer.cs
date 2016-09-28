@@ -61,6 +61,15 @@ namespace TG {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to estimated_trust_{0}.txt.
+        /// </summary>
+        internal static string estimated_trust_data_file {
+            get {
+                return ResourceManager.GetString("estimated_trust_data_file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to rating_data.txt.
         /// </summary>
         internal static string rating_data_file {

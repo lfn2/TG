@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TG;
-using TG.DataBuild;
-using TG.Recommendation;
 
-namespace TG.Pre_Processing
+namespace TG
 {
-	public class TrustMatrixBuilder
+	public class EstimatedTrustMatrixBuilder
 	{
-		public static Matrix<float> BuildEstimatedTrustMatrix(Matrix<float> trustMatrix, int neighbourhoodDistance)
+		public static Matrix<float> BuildEstimatedTrustMatrix(Matrix<int> trustMatrix, int neighbourhoodDistance)
 		{
 			Matrix<float> estimatedTrustMatrix = new Matrix<float>();
 
