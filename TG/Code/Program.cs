@@ -72,7 +72,7 @@ namespace TG
 				int item = Convert.ToInt32(Console.ReadLine());
 
 				Console.WriteLine(String.Format("Predicting rating for user {0} and item {1}...", user, item));
-				int predictedRating = RatingPredictor.PredictRating(ratingsMatrix, estimatedTrustMatrix, user, item);
+				double predictedRating = RatingPredictor.PredictRating(ratingsMatrix, estimatedTrustMatrix, user, item);
 				Console.WriteLine($"Predicted Rating: {predictedRating}");
 
 				Console.WriteLine("Predict another rating? (Y/N)");
@@ -85,12 +85,28 @@ namespace TG
 		{
 			int neighboudhoodDistance = GetNeighbourhoodDistance();
 
+			Console.WriteLine("Choose your experiment");
+			Console.WriteLine("1 - Mean Average Error");
+			Console.WriteLine("2 - Mean Absolute User Error");
+
+			int experiment = Int32.Parse(Console.ReadLine());
+
 			Matrix<int> ratingsMatrix = GetRatingsMatrix();
 			Matrix<float> estimatedTrustMatrix = GetEstimatedTrustMatrix(neighboudhoodDistance);
-
-			Console.WriteLine("Running Mean Average Error Experiment...");
-			double meanAverageError = Experiment.MeanAverageError(ratingsMatrix, estimatedTrustMatrix);
-			Console.WriteLine($"Mean Average Error = {meanAverageError}");
+						
+			switch (experiment)
+			{
+				case 1:
+					Console.WriteLine("Running Mean Average Error Experiment...");
+					double meanAverageError = Experiment.MeanAverageError(ratingsMatrix, estimatedTrustMatrix);
+					Console.WriteLine($"Mean Average Error = {meanAverageError}");
+					break;
+				case 2:
+					Console.WriteLine("Running Mean Absolute User Error Experiment...");
+					double meanAbsoluteUserError = Experiment.MeanAbsoluteUserError(ratingsMatrix, estimatedTrustMatrix);
+					Console.WriteLine($"Mean Absolute User Error = {meanAbsoluteUserError}");
+					break;
+			}			
 		}
 
 		private static int GetNeighbourhoodDistance()

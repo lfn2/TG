@@ -9,10 +9,51 @@ namespace TG
 	public class Experiment
 	{
 
+		public static double MeanAbsoluteUserError(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix)
+		{
+			double usersMAE = 0;
+
+			foreach (int user in ratingsMatrix.Rows)
+			{
+				double totalErrors = 0;
+				int ratings = 0;
+				List<int> userRatedItems = ratingsMatrix[user].ToList<int>();
+
+				foreach (int item in userRatedItems)
+				{
+					int originalRating = ratingsMatrix[user, item];
+					ratingsMatrix.remove(user, item);
+
+					double predictedRating = Math.Round(RatingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));
+
+					if (predictedRating > 0)
+					{
+						if (predictedRating > 5)
+							predictedRating = 5;
+						else if (predictedRating < 1)
+							predictedRating = 1;
+
+						ratings++;
+						totalErrors += Math.Abs(predictedRating - originalRating);
+					}
+
+					ratingsMatrix[user, item] = originalRating;
+				}
+
+				if (ratings > 0)
+					usersMAE += totalErrors / ratings;
+			}
+
+			double maue = usersMAE / ratingsMatrix.Rows.Count();
+
+			return maue;
+		}
+
 		public static double MeanAverageError(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix)
 		{
 
 			int ratings = 0;
+			double totalErrors = 0;
 			double mae = 0;
 
 			foreach (int user in ratingsMatrix.Rows)
@@ -23,16 +64,25 @@ namespace TG
 					int originalRating = ratingsMatrix[user, item];
 					ratingsMatrix.remove(user, item);
 
-					int predictedRating = RatingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item);				
+					double predictedRating = Math.Round(RatingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));				
 					
-					ratings++;
+					if (predictedRating > 0)
+					{
+						if (predictedRating > 5)
+							predictedRating = 5;
+						else if (predictedRating < 1)
+							predictedRating = 1;
 
-					mae = (mae * ((double)(ratings - 1) / ratings)) + ((double)predictedRating / ratings);
+						ratings++;
+						totalErrors += Math.Abs(predictedRating - originalRating);
+					}
 
 					ratingsMatrix[user, item] = originalRating;
 				}
 			}
-			
+
+			mae = totalErrors / ratings;
+
 			return mae;
 		}
 

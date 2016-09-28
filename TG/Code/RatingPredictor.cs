@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TG
 {
 	public class RatingPredictor
 	{
-		public static int PredictRating(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, int user, int item)
+		public static double PredictRating(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, int user, int item)
 		{
 			float userAverageRatings = getUserAverageRatings(ratingsMatrix, user);
 
@@ -34,7 +35,7 @@ namespace TG
 			if (denominator > 0)
 				predictedRating = userAverageRatings + (numerator / denominator);
 
-			return (int) predictedRating;
+			return predictedRating;
 		}		
 
 		public static float getUserAverageRatings(Matrix<int> ratingsMatrix, int user)
