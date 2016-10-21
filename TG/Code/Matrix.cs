@@ -79,6 +79,11 @@ namespace TG
 			}
 		}
 
+		public Boolean HasRow(int row)
+		{
+			return _Matrix.ContainsKey(row);
+		}
+
 		private void ReadFromFile(string filePath)
 		{			
 			var lines = File.ReadLines(filePath);
@@ -101,18 +106,21 @@ namespace TG
 			{
 				foreach (int user in this.Rows)
 					foreach (int trustedUser in this[user])
-					{
-						sb.Append(user);
-						sb.Append(" ");
-						sb.Append(trustedUser);
-						sb.Append(" ");
-						sb.Append(this[user, trustedUser]);
-						sb.AppendLine();
-					}
-
-				sw.Write(sb);
+						sw.WriteLine($"{user} {trustedUser} { this[user, trustedUser] }");
 			}
 		}
 
+		public Matrix<T> Clone()
+		{
+			Matrix<T> matrix = new Matrix<T>();
+
+			foreach(int key in this.Rows)
+			{
+				foreach (int col in this[key])
+					matrix[key, col] = this[key, col];
+			}
+
+			return matrix;
+		}
 	}
 }

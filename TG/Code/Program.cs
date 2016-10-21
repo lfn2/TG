@@ -51,7 +51,16 @@ namespace TG
 
 			Matrix<float> estimatedTrustMatrix = CreateEstimatedTrustMatrix(neighbourhoodDistance);
 
-			SaveMatrix(estimatedTrustMatrix, neighbourhoodDistance);
+			SaveMatrix(estimatedTrustMatrix, String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance));
+		}
+
+		private static void BuildResourcesAllocationMatrix()
+		{
+			int neighbourhoodDistance = GetNeighbourhoodDistance();
+
+			Matrix<float> resourcesAllocationMatrix = CreateResourceAllocationMatrix(neighbourhoodDistance);
+
+			SaveMatrix(resourcesAllocationMatrix, String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance));
 		}
 
 		private static void PredictRating()
@@ -81,9 +90,22 @@ namespace TG
 					
 		}
 
+		private static int GetAlgorithm()
+		{
+			Console.WriteLine("Choose your algorithm");
+			Console.WriteLine("1 - Basic Trust");
+			Console.WriteLine("2 - Resource Allocation Index");
+			Console.WriteLine("3 - Proximity Based Trust");
+
+			return Int32.Parse(Console.ReadLine());
+		}
+
+		
+
 		private static void RunExperiment()
 		{
-			int neighboudhoodDistance = GetNeighbourhoodDistance();
+			int neighbourhoodDistance = GetNeighbourhoodDistance();
+			int algorithm = GetAlgorithm();
 
 			Console.WriteLine("Choose your experiment");
 			Console.WriteLine("1 - Mean Average Error");
@@ -92,18 +114,31 @@ namespace TG
 			int experiment = Int32.Parse(Console.ReadLine());
 
 			Matrix<int> ratingsMatrix = GetRatingsMatrix();
-			Matrix<float> estimatedTrustMatrix = GetEstimatedTrustMatrix(neighboudhoodDistance);
+
+			Matrix<float> matrix = null;
+			switch (algorithm)
+			{
+				case 1:
+					 matrix = GetEstimatedTrustMatrix(neighbourhoodDistance);
+					break;
+				case 2:
+					matrix = GetResourceAllocationMatrix(neighbourhoodDistance);
+					break;
+				case 3:
+					matrix = GetProximityBasedTrustMatrix(neighbourhoodDistance);
+					break;
+			}			
 						
 			switch (experiment)
 			{
 				case 1:
 					Console.WriteLine("Running Mean Average Error Experiment...");
-					double meanAverageError = Experiment.MeanAverageError(ratingsMatrix, estimatedTrustMatrix);
+					double meanAverageError = Experiment.MeanAverageError(ratingsMatrix, matrix);
 					Console.WriteLine($"Mean Average Error = {meanAverageError}");
 					break;
 				case 2:
 					Console.WriteLine("Running Mean Absolute User Error Experiment...");
-					double meanAbsoluteUserError = Experiment.MeanAbsoluteUserError(ratingsMatrix, estimatedTrustMatrix);
+					double meanAbsoluteUserError = Experiment.MeanAbsoluteUserError(ratingsMatrix, matrix);
 					Console.WriteLine($"Mean Absolute User Error = {meanAbsoluteUserError}");
 					break;
 			}			
@@ -115,6 +150,48 @@ namespace TG
 			int neighbourhoodDistance = Convert.ToInt32(Console.ReadLine());
 
 			return neighbourhoodDistance;
+		}
+
+		private static Matrix<float> GetProximityBasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> proximityBasedTrustMatrix;
+			string proximityBasedTrustFile = String.Format(Resources.proximity_based_trust, neighbourhoodDistance);
+			if (File.Exists(proximityBasedTrustFile))
+			{
+				Console.WriteLine("Reading proximity based trust data...");
+				proximityBasedTrustMatrix = new Matrix<float>(proximityBasedTrustFile);
+				Console.WriteLine("Proximity based trust data read");
+			}
+			else
+			{
+				Console.WriteLine("Couldn't find proximity based trust data");
+				proximityBasedTrustMatrix = CreateProximityBasedTrustMatrix(neighbourhoodDistance);
+
+				SaveMatrix(proximityBasedTrustMatrix, String.Format(Resources.proximity_based_trust, neighbourhoodDistance));
+			}
+
+			return proximityBasedTrustMatrix;
+		}
+
+		private static Matrix<float> GetResourceAllocationMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> resourceAllocationMatrix;
+			string resourceAllocationFile = String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance);
+			if (File.Exists(resourceAllocationFile))
+			{
+				Console.WriteLine("Reading resource allocation data...");
+				resourceAllocationMatrix = new Matrix<float>(resourceAllocationFile);
+				Console.WriteLine("Resource Allocation data read");
+			}
+			else
+			{
+				Console.WriteLine("Couldn't find resource allocation data");
+				resourceAllocationMatrix = CreateResourceAllocationMatrix(neighbourhoodDistance);
+
+				SaveMatrix(resourceAllocationMatrix, String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance));
+			}
+
+			return resourceAllocationMatrix;
 		}
 
 		private static Matrix<float> GetEstimatedTrustMatrix(int neighbourhoodDistance)
@@ -132,9 +209,7 @@ namespace TG
 				Console.WriteLine("Couldn't find estimated trust data");
 				estimatedTrustMatrix = CreateEstimatedTrustMatrix(neighbourhoodDistance);
 
-				Console.WriteLine("Save estimated trust matrix? (Y/N)");
-				if (Console.ReadLine().Equals("y", StringComparison.InvariantCultureIgnoreCase))
-					SaveMatrix(estimatedTrustMatrix, neighbourhoodDistance);
+				SaveMatrix(estimatedTrustMatrix, String.Format(Resources.estimated_trust_data_file, neighbourhoodDistance));
 			}
 
 			return estimatedTrustMatrix;
@@ -149,11 +224,40 @@ namespace TG
 			return ratingsMatrix;
 		}
 
-		private static Matrix<float> CreateEstimatedTrustMatrix(int neighbourhoodDistance)
+		private static Matrix<float> CreateResourceAllocationMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
+
+			Console.WriteLine("Creating resource allocation matrix...");
+			Matrix<float> resourceAllocationMatrix = EstimatedTrustMatrixBuilder.BuildResourceAllocationMatrix(trustMatrix, neighbourhoodDistance);
+			Console.WriteLine("Resource allocation matrix created");
+
+			return resourceAllocationMatrix;
+		}
+
+		private static Matrix<float> GetOriginalTrustMatrix()
 		{
 			Console.WriteLine("Reading trust data");
-			Matrix<int> trustMatrix = new Matrix<int>(Resources.trust_data_file);
+			Matrix<float> trustMatrix = new Matrix<float>(Resources.trust_data_file);
 			Console.WriteLine("Trust data read");
+
+			return trustMatrix;
+		}
+
+		private static Matrix<float> CreateProximityBasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
+
+			Console.WriteLine("Creating proximity based trust matrix...");
+			Matrix<float> proximityBasedTrustMatrix = EstimatedTrustMatrixBuilder.BuildProximityBasedTrust(trustMatrix, neighbourhoodDistance);
+			Console.WriteLine("Proximity based trust matrix created");
+
+			return proximityBasedTrustMatrix;
+		}
+
+		private static Matrix<float> CreateEstimatedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
 
 			Console.WriteLine("Creating estimated trust matrix...");
 			Matrix<float> estimatedTrustMatrix =  EstimatedTrustMatrixBuilder.BuildEstimatedTrustMatrix(trustMatrix, neighbourhoodDistance);
@@ -162,11 +266,11 @@ namespace TG
 			return estimatedTrustMatrix;
 		}
 
-		private static void SaveMatrix<T>(Matrix<T> matrix, int neighbourhoodDistance)
+		private static void SaveMatrix<T>(Matrix<T> matrix, string filename)
 		{
 			Console.WriteLine("Saving matrix...");
-			matrix.WriteToFile(string.Format(Resources.estimated_trust_data_file, neighbourhoodDistance));
-			Console.WriteLine("Matrix saved");
+			matrix.WriteToFile(filename);
+			Console.WriteLine("Matrix saved");			
 		}
 
 		

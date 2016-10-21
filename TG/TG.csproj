@@ -80,6 +80,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code\BFSQueue.cs" />
     <Compile Include="Code\Experiment.cs" />
     <Compile Include="Code\Matrix.cs" />
     <Compile Include="Code\RatingPredictor.cs" />
