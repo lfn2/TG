@@ -8,7 +8,62 @@ namespace TG
 	public class EstimatedTrustMatrixBuilder
 	{
 
-		public static Matrix<float> BuildProximityBasedTrust(Matrix<float> trustMatrix, int neighbourhoodDistance)
+		public static Matrix<float> BuildCommonNeighboursBasedTrust(Matrix<float> trustMatrix, int neighbourhoodDistance)
+		{
+			Matrix<float> estimatedTrustMatrix = trustMatrix.Clone();
+
+			float maxRA = float.MinValue;
+
+			foreach (int sourceUser in trustMatrix.Rows)
+			{
+				BFSQueue queue = new BFSQueue(neighbourhoodDistance - 1);
+
+				foreach (int trustedUser in trustMatrix[sourceUser])
+					queue.Enqueue(new BFSNode(trustedUser, 1));
+
+				while (queue.Count() != 0)
+				{
+					BFSNode node = queue.Deque();
+					int user = node.value;
+					int distance = node.distance;
+
+					if (trustMatrix.HasRow(user))
+					{
+						Dictionary<int, float> neighboursRA = new Dictionary<int, float>();
+						foreach (int neighbour in trustMatrix[user])
+						{
+							if (!trustMatrix[sourceUser].Contains(neighbour))
+								neighboursRA[neighbour] = CommonNeighbours(trustMatrix, sourceUser, neighbour);
+						}
+						List<KeyValuePair<int, float>> RAList = neighboursRA.ToList();
+						RAList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
+
+						for (int i = 0; i < RAList.Count / 3; i++)
+							estimatedTrustMatrix[sourceUser, RAList[i].Key] = BasicTrustMetric(neighbourhoodDistance, distance + 1);
+					}
+
+					//if (trustMatrix.HasRow(user)) {
+					//	foreach (int neighbour in trustMatrix[user])
+					//	{
+					//		if (!trustMatrix[sourceUser].Contains(neighbour))
+					//		{
+					//			float resourceAllocation = ResourceAllocationIndex(trustMatrix, sourceUser, neighbour);
+					//			maxRA = Math.Max(maxRA, resourceAllocation);
+					//			if (resourceAllocation > 1)
+					//			{
+					//				estimatedTrustMatrix[sourceUser, neighbour] = resourceAllocation * BasicTrustMetric(neighbourhoodDistance, distance);
+					//				queue.Enqueue(new BFSNode(neighbour, distance + 1));
+					//			}
+					//		}
+					//	}
+					//}
+				}
+			}
+
+			return estimatedTrustMatrix;
+		}
+
+		public static Matrix<float> BuildRABasedTrust(Matrix<float> trustMatrix, int neighbourhoodDistance)
 		{
 			Matrix<float> estimatedTrustMatrix = trustMatrix.Clone();
 
@@ -195,6 +250,16 @@ namespace TG
 			return ra;
 		}
 
+		public static float CommonNeighbours(Matrix<float> matrix, int x, int y)
+		{
+			float commonNeighbours = 0;
+
+			foreach (int neighbour in matrix[x])
+				if (matrix.HasRow(y) && matrix[y].Contains(neighbour))
+					commonNeighbours += 1;
+
+			return commonNeighbours;
+		}
 
 	}
 }

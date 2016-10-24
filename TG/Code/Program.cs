@@ -95,7 +95,8 @@ namespace TG
 			Console.WriteLine("Choose your algorithm");
 			Console.WriteLine("1 - Basic Trust");
 			Console.WriteLine("2 - Resource Allocation Index");
-			Console.WriteLine("3 - Proximity Based Trust");
+			Console.WriteLine("3 - RA Based Trust");
+			Console.WriteLine("4 - CN Based Trust");
 
 			return Int32.Parse(Console.ReadLine());
 		}
@@ -125,7 +126,10 @@ namespace TG
 					matrix = GetResourceAllocationMatrix(neighbourhoodDistance);
 					break;
 				case 3:
-					matrix = GetProximityBasedTrustMatrix(neighbourhoodDistance);
+					matrix = GetRABasedTrustMatrix(neighbourhoodDistance);
+					break;
+				case 4:
+					matrix = GetCNBasedTrustMatrix(neighbourhoodDistance);
 					break;
 			}			
 						
@@ -152,25 +156,46 @@ namespace TG
 			return neighbourhoodDistance;
 		}
 
-		private static Matrix<float> GetProximityBasedTrustMatrix(int neighbourhoodDistance)
+		private static Matrix<float> GetCNBasedTrustMatrix(int neighbourhoodDistace)
 		{
-			Matrix<float> proximityBasedTrustMatrix;
-			string proximityBasedTrustFile = String.Format(Resources.proximity_based_trust, neighbourhoodDistance);
-			if (File.Exists(proximityBasedTrustFile))
+			Matrix<float> CNBasedTrustMatrix;
+			string CNBasedTrustFile = String.Format(Resources.cn_based_trust, neighbourhoodDistace);
+			if (File.Exists(CNBasedTrustFile))
 			{
-				Console.WriteLine("Reading proximity based trust data...");
-				proximityBasedTrustMatrix = new Matrix<float>(proximityBasedTrustFile);
+				Console.WriteLine("Reading CN based trust data...");
+				CNBasedTrustMatrix = new Matrix<float>(CNBasedTrustFile);
+				Console.WriteLine("CN based trust data read");
+			}
+			else
+			{
+				Console.WriteLine("Couldn't find CN based trust data");
+				CNBasedTrustMatrix = CreateCNBasedTrustMatrix(neighbourhoodDistace);
+
+				SaveMatrix(CNBasedTrustMatrix, String.Format(Resources.cn_based_trust, neighbourhoodDistace));
+			}
+
+			return CNBasedTrustMatrix;
+		}
+
+		private static Matrix<float> GetRABasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> RABasedTrustMatrix;
+			string raBasedTrustFile = String.Format(Resources.ra_based_trust, neighbourhoodDistance);
+			if (File.Exists(raBasedTrustFile))
+			{
+				Console.WriteLine("Reading RA based trust data...");
+				RABasedTrustMatrix = new Matrix<float>(raBasedTrustFile);
 				Console.WriteLine("Proximity based trust data read");
 			}
 			else
 			{
-				Console.WriteLine("Couldn't find proximity based trust data");
-				proximityBasedTrustMatrix = CreateProximityBasedTrustMatrix(neighbourhoodDistance);
+				Console.WriteLine("Couldn't find RA based trust data");
+				RABasedTrustMatrix = CreateRABasedTrustMatrix(neighbourhoodDistance);
 
-				SaveMatrix(proximityBasedTrustMatrix, String.Format(Resources.proximity_based_trust, neighbourhoodDistance));
+				SaveMatrix(RABasedTrustMatrix, String.Format(Resources.ra_based_trust, neighbourhoodDistance));
 			}
 
-			return proximityBasedTrustMatrix;
+			return RABasedTrustMatrix;
 		}
 
 		private static Matrix<float> GetResourceAllocationMatrix(int neighbourhoodDistance)
@@ -244,15 +269,26 @@ namespace TG
 			return trustMatrix;
 		}
 
-		private static Matrix<float> CreateProximityBasedTrustMatrix(int neighbourhoodDistance)
+		private static Matrix<float> CreateCNBasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
+
+			Console.WriteLine("Creating CN based trust matrix...");
+			Matrix<float> CNBasedTrustMatrix = EstimatedTrustMatrixBuilder.BuildCommonNeighboursBasedTrust(trustMatrix, neighbourhoodDistance);
+			Console.WriteLine("CN based trust matrix created");
+
+			return CNBasedTrustMatrix;
+		}
+
+		private static Matrix<float> CreateRABasedTrustMatrix(int neighbourhoodDistance)
 		{
 			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
 
 			Console.WriteLine("Creating proximity based trust matrix...");
-			Matrix<float> proximityBasedTrustMatrix = EstimatedTrustMatrixBuilder.BuildProximityBasedTrust(trustMatrix, neighbourhoodDistance);
+			Matrix<float> RABasedTrustMatrix = EstimatedTrustMatrixBuilder.BuildRABasedTrust(trustMatrix, neighbourhoodDistance);
 			Console.WriteLine("Proximity based trust matrix created");
 
-			return proximityBasedTrustMatrix;
+			return RABasedTrustMatrix;
 		}
 
 		private static Matrix<float> CreateEstimatedTrustMatrix(int neighbourhoodDistance)

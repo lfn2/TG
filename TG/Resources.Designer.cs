@@ -61,6 +61,15 @@ namespace TG {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to cn_based_trust_{0}.
+        /// </summary>
+        internal static string cn_based_trust {
+            get {
+                return ResourceManager.GetString("cn_based_trust", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to estimated_trust_{0}.
         /// </summary>
         internal static string estimated_trust_data_file {
@@ -70,11 +79,11 @@ namespace TG {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to proximity_based_trust_{0}.
+        ///   Looks up a localized string similar to ra_based_trust_{0}.
         /// </summary>
-        internal static string proximity_based_trust {
+        internal static string ra_based_trust {
             get {
-                return ResourceManager.GetString("proximity_based_trust", resourceCulture);
+                return ResourceManager.GetString("ra_based_trust", resourceCulture);
             }
         }
         
