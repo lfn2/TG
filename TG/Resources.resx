@@ -135,4 +135,13 @@
   <data name="cn_based_trust" xml:space="preserve">
     <value>cn_based_trust_{0}</value>
   </data>
+  <data name="jaccard_based_trust" xml:space="preserve">
+    <value>jaccard_based_trust_{0}</value>
+  </data>
+  <data name="salton_based_trust" xml:space="preserve">
+    <value>salton_based_trust_{0}</value>
+  </data>
+  <data name="rebuild_trust_matrix" xml:space="preserve">
+    <value>rebuild_trust_matrix_{0}</value>
+  </data>
 </root>

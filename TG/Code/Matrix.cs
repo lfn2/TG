@@ -61,6 +61,12 @@ namespace TG
 					_Matrix[row].Remove(col);
 		}
 
+		public void remove(int row)
+		{
+			if (_Matrix.ContainsKey(row))
+				_Matrix.Remove(row);
+		}
+
 		public T Get(int row, int col)
 		{
 			return _Matrix[row][col];
@@ -77,6 +83,11 @@ namespace TG
 			{
 				return _Matrix.Keys;
 			}
+		}
+
+		public void AddRow(int row)
+		{
+			_Matrix.Add(row, new Dictionary<int, T>());
 		}
 
 		public Boolean HasRow(int row)

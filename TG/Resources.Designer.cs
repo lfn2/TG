@@ -79,6 +79,15 @@ namespace TG {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to jaccard_based_trust_{0}.
+        /// </summary>
+        internal static string jaccard_based_trust {
+            get {
+                return ResourceManager.GetString("jaccard_based_trust", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ra_based_trust_{0}.
         /// </summary>
         internal static string ra_based_trust {
@@ -97,11 +106,29 @@ namespace TG {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to rebuild_trust_matrix_{0}.
+        /// </summary>
+        internal static string rebuild_trust_matrix {
+            get {
+                return ResourceManager.GetString("rebuild_trust_matrix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to resource_allocation_{0}.
         /// </summary>
         internal static string resource_allocation_data_file {
             get {
                 return ResourceManager.GetString("resource_allocation_data_file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to salton_based_trust_{0}.
+        /// </summary>
+        internal static string salton_based_trust {
+            get {
+                return ResourceManager.GetString("salton_based_trust", resourceCulture);
             }
         }
         

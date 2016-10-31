@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,10 +17,7 @@ namespace TG
 			while (!input.Equals("9"))
 			{
 				Console.WriteLine("Menu: ");
-				Console.WriteLine("1 - Build estimated trust matrix");
-				Console.WriteLine("2 - Predict rating for a user");
 				Console.WriteLine("3 - Run Experiments");
-				Console.WriteLine("4 - Get experiment results");
 				Console.WriteLine("9 - Exit");
 				Console.WriteLine();
 
@@ -26,68 +25,11 @@ namespace TG
 
 				switch(input)
 				{
-					case "1":
-						BuildEstimatedTrustMatrix();
-						break;
-					case "2":
-						PredictRating();
-						break;
 					case "3":
 						RunExperiment();
 						break;
 				}
-
-				//float prediction = BasicRS.PredictRating(userItemMatrix, trustMatrix, 1, 101);
-
-				//Console.WriteLine("Rating predicted: " + prediction);
 			}
-		}
-
-		
-
-		private static void BuildEstimatedTrustMatrix()
-		{
-			int neighbourhoodDistance = GetNeighbourhoodDistance();
-
-			Matrix<float> estimatedTrustMatrix = CreateEstimatedTrustMatrix(neighbourhoodDistance);
-
-			SaveMatrix(estimatedTrustMatrix, String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance));
-		}
-
-		private static void BuildResourcesAllocationMatrix()
-		{
-			int neighbourhoodDistance = GetNeighbourhoodDistance();
-
-			Matrix<float> resourcesAllocationMatrix = CreateResourceAllocationMatrix(neighbourhoodDistance);
-
-			SaveMatrix(resourcesAllocationMatrix, String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance));
-		}
-
-		private static void PredictRating()
-		{
-			int neighbourhoodDistance = GetNeighbourhoodDistance();
-
-			Matrix<int> ratingsMatrix = GetRatingsMatrix();
-
-			Matrix<float> estimatedTrustMatrix = GetEstimatedTrustMatrix(neighbourhoodDistance);
-						
-			string predict = "y";
-			while (predict.Equals("y", StringComparison.InvariantCultureIgnoreCase))
-			{
-				Console.WriteLine("Choose the user");
-				int user = Convert.ToInt32(Console.ReadLine());
-
-				Console.WriteLine("Choose the item");
-				int item = Convert.ToInt32(Console.ReadLine());
-
-				Console.WriteLine(String.Format("Predicting rating for user {0} and item {1}...", user, item));
-				double predictedRating = RatingPredictor.PredictRating(ratingsMatrix, estimatedTrustMatrix, user, item);
-				Console.WriteLine($"Predicted Rating: {predictedRating}");
-
-				Console.WriteLine("Predict another rating? (Y/N)");
-				predict = Console.ReadLine();				
-			}
-					
 		}
 
 		private static int GetAlgorithm()
@@ -97,6 +39,9 @@ namespace TG
 			Console.WriteLine("2 - Resource Allocation Index");
 			Console.WriteLine("3 - RA Based Trust");
 			Console.WriteLine("4 - CN Based Trust");
+			Console.WriteLine("5 - Salton Based Trust");
+			Console.WriteLine("6 = Jaccard Based Trust");
+			Console.WriteLine("7 = Estimated Trust Rebuilt Matrix");
 
 			return Int32.Parse(Console.ReadLine());
 		}
@@ -107,12 +52,6 @@ namespace TG
 		{
 			int neighbourhoodDistance = GetNeighbourhoodDistance();
 			int algorithm = GetAlgorithm();
-
-			Console.WriteLine("Choose your experiment");
-			Console.WriteLine("1 - Mean Average Error");
-			Console.WriteLine("2 - Mean Absolute User Error");
-
-			int experiment = Int32.Parse(Console.ReadLine());
 
 			Matrix<int> ratingsMatrix = GetRatingsMatrix();
 
@@ -131,9 +70,18 @@ namespace TG
 				case 4:
 					matrix = GetCNBasedTrustMatrix(neighbourhoodDistance);
 					break;
+				case 5:
+					matrix = GetSaltonBasedTrustMatrix(neighbourhoodDistance);
+					break;
+				case 6:
+					matrix = GetJaccardBasedTrustMatrix(neighbourhoodDistance);
+					break;
+				case 7:
+					matrix = GetEstimatedTrustRebuiltMatrix(ratingsMatrix, neighbourhoodDistance);
+					break;
 			}			
 						
-			switch (experiment)
+			switch (1)
 			{
 				case 1:
 					Console.WriteLine("Running Mean Average Error Experiment...");
@@ -219,6 +167,168 @@ namespace TG
 			return resourceAllocationMatrix;
 		}
 
+		private static Matrix<float> GetSaltonBasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> saltonBasedTrustMatrix;
+			string saltonBasedTrustFile = String.Format(Resources.salton_based_trust, neighbourhoodDistance);
+			if (File.Exists(saltonBasedTrustFile))
+			{
+				Console.WriteLine("Reading salton based trust data...");
+				saltonBasedTrustMatrix = new Matrix<float>(saltonBasedTrustFile);
+				Console.WriteLine("Salton based trust data read");
+			}
+			else
+			{
+				Console.WriteLine("Couldn't find salton based trust data");
+				saltonBasedTrustMatrix = CreateSaltonBasedTrustMatrix(neighbourhoodDistance);
+
+				SaveMatrix(saltonBasedTrustMatrix, String.Format(Resources.salton_based_trust, neighbourhoodDistance));
+			}
+
+			return saltonBasedTrustMatrix;
+		}
+
+		private static Matrix<float> GetJaccardBasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> jaccardBasedTrustMatrix;
+			string jaccardBasedTrustFile = String.Format(Resources.jaccard_based_trust, neighbourhoodDistance);
+			if (File.Exists(jaccardBasedTrustFile))
+			{
+				Console.WriteLine("Reading jaccard based trust data...");
+				jaccardBasedTrustMatrix = new Matrix<float>(jaccardBasedTrustFile);
+				Console.WriteLine("Jaccard based trust data read");
+			}
+			else
+			{
+				Console.WriteLine("Couldn't find salton based trust data");
+				jaccardBasedTrustMatrix = CreateJaccardBasedTrustMatrix(neighbourhoodDistance);
+
+				SaveMatrix(jaccardBasedTrustMatrix, String.Format(Resources.jaccard_based_trust, neighbourhoodDistance));
+			}
+
+			return jaccardBasedTrustMatrix;
+		}
+
+		private static Matrix<float> GetEstimatedTrustRebuiltMatrix(Matrix<int> ratingsMatrix, int neighbourHoodDistance)
+		{
+			Matrix<float> estimatedTrustMatrix;
+			string rebuiltTrustMatrixFile = String.Format(Resources.rebuild_trust_matrix, neighbourHoodDistance);
+
+			if (File.Exists(rebuiltTrustMatrixFile))
+			{
+				Console.WriteLine("Reading rebuild trust matrix data...");
+				estimatedTrustMatrix = new Matrix<float>(rebuiltTrustMatrixFile);
+				Console.WriteLine("Rebuilt trust matrix data read");
+			}
+			else
+			{
+				Console.WriteLine("Creating rebuilt trust matrix...");
+
+				Matrix<float> trustMatrix = GetOriginalTrustMatrix();
+				Matrix<double> correlationMatrix = GetCorrelationMatrix(trustMatrix, ratingsMatrix);
+				trustMatrix = RebuildTrustMatrix(trustMatrix, correlationMatrix);
+
+				estimatedTrustMatrix = EstimatedTrustMatrixBuilder.BuildEstimatedTrustMatrix(trustMatrix, neighbourHoodDistance);
+
+				Console.WriteLine("Rebuilt trust matrix created");
+
+				SaveMatrix(estimatedTrustMatrix, rebuiltTrustMatrixFile);
+			}
+
+			return estimatedTrustMatrix;
+		}
+
+		private static Matrix<float> RebuildTrustMatrix(Matrix<float> trustMatrix, Matrix<double> correlationMatrix)
+		{
+			List<int> users = trustMatrix.Rows.ToList<int>();
+			foreach (int user in users)
+			{
+				List<int> neighbours = trustMatrix[user].ToList<int>();
+				foreach (int neighbour in neighbours)
+				{
+					if (correlationMatrix[user, neighbour] < 0.5)
+					{
+						trustMatrix.remove(user, neighbour);
+
+						if (trustMatrix[user].Count() == 0)
+							trustMatrix.remove(user);
+					}
+				}
+			}
+
+			return trustMatrix;
+		}
+
+		private static Matrix<double> GetCorrelationMatrix(Matrix<float> trustMatrix, Matrix<int> ratingsMatrix)
+		{
+			Matrix<double> correlationMatrix = new Matrix<double>();
+
+			foreach (int user in trustMatrix.Rows)
+			{
+				foreach (int neighbour in trustMatrix[user])
+				{
+					correlationMatrix[user, neighbour] = GetCorrelation(ratingsMatrix, user, neighbour);
+				}
+			}
+
+			return correlationMatrix;
+		}
+
+		private static double GetCorrelation(Matrix<int> matrix, int a, int u)
+		{
+			double correlation = 0;
+
+			HashSet<int> commonItems = GetCommonItems(matrix, a, u);
+			
+			if (commonItems.Count >= 2)
+			{
+				double aAverageRating = GetAverageRating(matrix, a);
+				double uAverageRating = GetAverageRating(matrix, u);
+				double num = 0;
+				double den1 = 0;
+				double den2 = 0;
+
+				foreach (int item in commonItems)
+				{
+					double r1 = matrix[a, item] - aAverageRating;
+					double r2 = matrix[u, item] - uAverageRating;
+
+					num += r1 * r2;
+					den1 += r1 * r1;
+					den2 += r2 * r2;
+				}
+
+				correlation = num / Math.Sqrt(den1 * den2);
+			}
+
+			return correlation;
+		}
+
+		private static HashSet<int> GetCommonItems(Matrix<int> matrix, int a, int u)
+		{
+			HashSet<int> set = new HashSet<int>();
+
+			if (matrix.Rows.Contains(a) && matrix.Rows.Contains(u))
+				foreach (int item in matrix[a])
+					if (matrix[u].Contains(item))
+						set.Add(item);
+
+			return set;
+		}
+
+		private static double GetAverageRating(Matrix<int> matrix, int user)
+		{
+			double avg = 0;
+
+			if (matrix.HasRow(user))
+			{
+				int sum = matrix[user].Sum();
+				avg = (double) sum / matrix[user].Count();
+			}
+
+			return avg;
+		}
+
 		private static Matrix<float> GetEstimatedTrustMatrix(int neighbourhoodDistance)
 		{
 			Matrix<float> estimatedTrustMatrix;
@@ -284,11 +394,33 @@ namespace TG
 		{
 			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
 
-			Console.WriteLine("Creating proximity based trust matrix...");
+			Console.WriteLine("Creating RA based trust matrix...");
 			Matrix<float> RABasedTrustMatrix = EstimatedTrustMatrixBuilder.BuildRABasedTrust(trustMatrix, neighbourhoodDistance);
-			Console.WriteLine("Proximity based trust matrix created");
+			Console.WriteLine("RA based trust matrix created");
 
 			return RABasedTrustMatrix;
+		}
+
+		private static Matrix<float> CreateSaltonBasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
+
+			Console.WriteLine("Creating Salton based trust matrix...");
+			Matrix<float> SaltonBasedTrustMatrix = EstimatedTrustMatrixBuilder.BuildSaltonIndexTrustMatrix(trustMatrix, neighbourhoodDistance);
+			Console.WriteLine("Salton based trust matrix created");
+
+			return SaltonBasedTrustMatrix;
+		}
+
+		private static Matrix<float> CreateJaccardBasedTrustMatrix(int neighbourhoodDistance)
+		{
+			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
+
+			Console.WriteLine("Creating Jaccard based trust matrix...");
+			Matrix<float> jaccardBasedTrustMatrix = EstimatedTrustMatrixBuilder.BuildJaccardIndexTrustMatrix(trustMatrix, neighbourhoodDistance);
+			Console.WriteLine("Jaccard based trust matrix created");
+
+			return jaccardBasedTrustMatrix;
 		}
 
 		private static Matrix<float> CreateEstimatedTrustMatrix(int neighbourhoodDistance)
