@@ -36,12 +36,11 @@ namespace TG
 		{
 			Console.WriteLine("Choose your algorithm");
 			Console.WriteLine("1 - Basic Trust");
-			Console.WriteLine("2 - Resource Allocation Index");
-			Console.WriteLine("3 - RA Based Trust");
-			Console.WriteLine("4 - CN Based Trust");
-			Console.WriteLine("5 - Salton Based Trust");
-			Console.WriteLine("6 = Jaccard Based Trust");
-			Console.WriteLine("7 = Estimated Trust Rebuilt Matrix");
+			Console.WriteLine("2 - RA Based Trust");
+			Console.WriteLine("3 - CN Based Trust");
+			Console.WriteLine("4 - Salton Based Trust");
+			Console.WriteLine("5 = Jaccard Based Trust");
+			Console.WriteLine("6 = Estimated Trust Rebuilt Matrix");
 
 			return Int32.Parse(Console.ReadLine());
 		}
@@ -62,21 +61,18 @@ namespace TG
 					 matrix = GetEstimatedTrustMatrix(neighbourhoodDistance);
 					break;
 				case 2:
-					matrix = GetResourceAllocationMatrix(neighbourhoodDistance);
-					break;
-				case 3:
 					matrix = GetRABasedTrustMatrix(neighbourhoodDistance);
 					break;
-				case 4:
+				case 3:
 					matrix = GetCNBasedTrustMatrix(neighbourhoodDistance);
 					break;
-				case 5:
+				case 4:
 					matrix = GetSaltonBasedTrustMatrix(neighbourhoodDistance);
 					break;
-				case 6:
+				case 5:
 					matrix = GetJaccardBasedTrustMatrix(neighbourhoodDistance);
 					break;
-				case 7:
+				case 6:
 					matrix = GetEstimatedTrustRebuiltMatrix(ratingsMatrix, neighbourhoodDistance);
 					break;
 			}			
@@ -144,27 +140,6 @@ namespace TG
 			}
 
 			return RABasedTrustMatrix;
-		}
-
-		private static Matrix<float> GetResourceAllocationMatrix(int neighbourhoodDistance)
-		{
-			Matrix<float> resourceAllocationMatrix;
-			string resourceAllocationFile = String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance);
-			if (File.Exists(resourceAllocationFile))
-			{
-				Console.WriteLine("Reading resource allocation data...");
-				resourceAllocationMatrix = new Matrix<float>(resourceAllocationFile);
-				Console.WriteLine("Resource Allocation data read");
-			}
-			else
-			{
-				Console.WriteLine("Couldn't find resource allocation data");
-				resourceAllocationMatrix = CreateResourceAllocationMatrix(neighbourhoodDistance);
-
-				SaveMatrix(resourceAllocationMatrix, String.Format(Resources.resource_allocation_data_file, neighbourhoodDistance));
-			}
-
-			return resourceAllocationMatrix;
 		}
 
 		private static Matrix<float> GetSaltonBasedTrustMatrix(int neighbourhoodDistance)
@@ -357,17 +332,6 @@ namespace TG
 			Console.WriteLine("Reading data read");
 
 			return ratingsMatrix;
-		}
-
-		private static Matrix<float> CreateResourceAllocationMatrix(int neighbourhoodDistance)
-		{
-			Matrix<float> trustMatrix = GetOriginalTrustMatrix();
-
-			Console.WriteLine("Creating resource allocation matrix...");
-			Matrix<float> resourceAllocationMatrix = EstimatedTrustMatrixBuilder.BuildResourceAllocationMatrix(trustMatrix, neighbourhoodDistance);
-			Console.WriteLine("Resource allocation matrix created");
-
-			return resourceAllocationMatrix;
 		}
 
 		private static Matrix<float> GetOriginalTrustMatrix()

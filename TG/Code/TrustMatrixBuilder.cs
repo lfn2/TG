@@ -15,11 +15,9 @@ namespace TG
 			Matrix<float> estimatedTrustMatrix = trustMatrix.Clone();
 			Matrix<float> cnMatrix = new Matrix<float>();
 
-			float maxRA = float.MinValue;
-
 			foreach (int sourceUser in trustMatrix.Rows)
 			{
-				BFSQueue queue = new BFSQueue(neighbourhoodDistance - 1);
+				BFSQueue queue = new BFSQueue(neighbourhoodDistance);
 
 				foreach (int trustedUser in trustMatrix[sourceUser])
 					queue.Enqueue(new BFSNode(trustedUser, 1));
@@ -30,24 +28,31 @@ namespace TG
 					int user = node.value;
 					int distance = node.distance;
 
+					if (distance == neighbourhoodDistance)
+						break;
+
 					if (trustMatrix.HasRow(user))
 					{
-						Dictionary<int, float> neighboursRA = new Dictionary<int, float>();
-						foreach (int neighbour in trustMatrix[user])
+						Dictionary<int, float> commonNeighbours = new Dictionary<int, float>();
+						foreach (int trustedUser in trustMatrix[user])
 						{
-							if (!trustMatrix[sourceUser].Contains(neighbour))
+							if (!trustMatrix[sourceUser].Contains(trustedUser))
 							{
-								if (!(cnMatrix.HasRow(sourceUser) && cnMatrix[sourceUser].Contains(neighbour)))
-									cnMatrix[sourceUser, neighbour] = cnMatrix[neighbour, sourceUser] = CommonNeighbours(trustMatrix, sourceUser, neighbour);
+								if (!(cnMatrix.HasRow(user) && cnMatrix[user].Contains(trustedUser)))
+									cnMatrix[user, trustedUser] = CommonNeighbours(trustMatrix, user, trustedUser);
 
-								neighboursRA[neighbour] = cnMatrix[sourceUser, neighbour];
+								commonNeighbours[trustedUser] = cnMatrix[user, trustedUser];
 							}
 						}
-						List<KeyValuePair<int, float>> RAList = neighboursRA.ToList();
-						RAList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
 
-						for (int i = 0; i < RAList.Count / 3; i++)
-							estimatedTrustMatrix[sourceUser, RAList[i].Key] = BasicTrustMetric(neighbourhoodDistance, distance + 1);
+						List<KeyValuePair<int, float>> CNList = commonNeighbours.ToList();
+						CNList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
+
+						for (int i = 0; i < 5 && i < CNList.Count; i++)
+						{
+							queue.Enqueue(new BFSNode(CNList[i].Key, distance + 1));
+							estimatedTrustMatrix[sourceUser, CNList[i].Key] = BasicTrustMetric(neighbourhoodDistance, distance + 1);
+						}
 					}
 				}
 			}
@@ -60,108 +65,6 @@ namespace TG
 			Matrix<float> estimatedTrustMatrix = trustMatrix.Clone();
 			Matrix<float> raMatrix = new Matrix<float>();
 
-			float totalRA = 0;
-			float countRA = 0;
-
-			foreach (int sourceUser in trustMatrix.Rows)
-			{
-				BFSQueue queue = new BFSQueue(neighbourhoodDistance - 1);
-
-				foreach (int trustedUser in trustMatrix[sourceUser])
-					queue.Enqueue(new BFSNode(trustedUser, 1));
-
-				while (queue.Count() != 0)
-				{
-					BFSNode node = queue.Deque();
-					int user = node.value;
-					int distance = node.distance;
-
-					if (trustMatrix.HasRow(user))
-					{
-						Dictionary<int, float> neighboursRA = new Dictionary<int, float>();
-						foreach (int neighbour in trustMatrix[user])
-						{
-							if (!trustMatrix[sourceUser].Contains(neighbour))
-							{
-								float ra;
-								if (!(raMatrix.HasRow(sourceUser) && raMatrix[sourceUser].Contains(neighbour)))
-									raMatrix[sourceUser, neighbour] = raMatrix[neighbour, sourceUser] = ResourceAllocationIndex(trustMatrix, sourceUser, neighbour);
-
-								ra = raMatrix[sourceUser, neighbour];
-																	
-								if (ra > AVG_RA)
-								{
-									estimatedTrustMatrix[sourceUser, neighbour] = BasicTrustMetric(neighbourhoodDistance + 1, distance + 1);
-								}
-							}
-						}
-					}
-				}
-			}
-
-			return estimatedTrustMatrix;
-		}
-
-		public static Matrix<float> BuildRABasedTrust2(Matrix<float> trustMatrix, int neighbourhoodDistance)
-		{
-			Matrix<float> estimatedTrustMatrix = trustMatrix.Clone();
-
-			float maxRA = float.MinValue;
-
-			foreach (int sourceUser in trustMatrix.Rows)
-			{
-				BFSQueue queue = new BFSQueue(neighbourhoodDistance - 1);
-
-				foreach (int trustedUser in trustMatrix[sourceUser])
-					queue.Enqueue(new BFSNode(trustedUser, 1));
-
-				while (queue.Count() != 0)
-				{
-					BFSNode node = queue.Deque();
-					int user = node.value;
-					int distance = node.distance;
-
-					if (trustMatrix.HasRow(user))
-					{
-						Dictionary<int, float> neighboursRA = new Dictionary<int, float>();
-						foreach (int neighbour in trustMatrix[user])
-						{
-							if (!trustMatrix[sourceUser].Contains(neighbour))
-								neighboursRA[neighbour] = ResourceAllocationIndex(trustMatrix, sourceUser, neighbour);
-						}
-						List<KeyValuePair<int, float>> RAList = neighboursRA.ToList();
-						RAList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
-
-						for (int i = 0; i < RAList.Count/3; i++)
-							estimatedTrustMatrix[sourceUser, RAList[i].Key] = BasicTrustMetric(neighbourhoodDistance, distance + 1);
-					}
-
-					//if (trustMatrix.HasRow(user)) {
-					//	foreach (int neighbour in trustMatrix[user])
-					//	{
-					//		if (!trustMatrix[sourceUser].Contains(neighbour))
-					//		{
-					//			float resourceAllocation = ResourceAllocationIndex(trustMatrix, sourceUser, neighbour);
-					//			maxRA = Math.Max(maxRA, resourceAllocation);
-					//			if (resourceAllocation > 1)
-					//			{
-					//				estimatedTrustMatrix[sourceUser, neighbour] = resourceAllocation * BasicTrustMetric(neighbourhoodDistance, distance);
-					//				queue.Enqueue(new BFSNode(neighbour, distance + 1));
-					//			}
-					//		}
-					//	}
-					//}
-				}
-			}
-
-			return estimatedTrustMatrix;
-		}
-
-		public static Matrix<float> BuildSaltonIndexTrustMatrix2(Matrix<float> trustMatrix, int neighbourhoodDistance)
-		{
-			Matrix<float> estimatedTrustMatrix = new Matrix<float>();
-			Matrix<float> saltonMatrix = new Matrix<float>();
-
 			foreach (int sourceUser in trustMatrix.Rows)
 			{
 				BFSQueue queue = new BFSQueue(neighbourhoodDistance);
@@ -169,25 +72,40 @@ namespace TG
 				foreach (int trustedUser in trustMatrix[sourceUser])
 					queue.Enqueue(new BFSNode(trustedUser, 1));
 
-				while (queue.Count() != 0)
+				while (queue.Count() > 0)
 				{
 					BFSNode node = queue.Deque();
 					int user = node.value;
-					int distance = node.distance;					
+					int distance = node.distance;
 
-					if (estimatedTrustMatrix.HasRow(sourceUser) && !estimatedTrustMatrix[sourceUser].Contains(user))
+					if (distance == neighbourhoodDistance)
+						break;
+
+					if (trustMatrix.HasRow(user))
 					{
-						if (!(saltonMatrix.HasRow(sourceUser) && saltonMatrix[sourceUser].Contains(user)))
-							saltonMatrix[sourceUser, user] = saltonMatrix[user, sourceUser] = SaltonIndex(trustMatrix, sourceUser, user);
+						Dictionary<int, float> RAIndexes = new Dictionary<int, float>();
+						foreach (int trustedUser in trustMatrix[user])
+						{
+							if (!trustMatrix[sourceUser].Contains(trustedUser))
+							{
+								if (!(raMatrix.HasRow(user) && raMatrix[user].Contains(trustedUser)))
+									raMatrix[user, trustedUser] = ResourceAllocationIndex(trustMatrix, user, trustedUser);
 
-						if (saltonMatrix[sourceUser, user] > 0.5)
-							estimatedTrustMatrix[sourceUser, user] = (float)(neighbourhoodDistance - distance + 1) / neighbourhoodDistance;
+								RAIndexes[trustedUser] = raMatrix[user, trustedUser];
+							}							
+						}
 
-						if (trustMatrix.Rows.Contains(user))
-							foreach (int trustedUser in trustMatrix[user])
-								queue.Enqueue(new BFSNode(trustedUser, distance + 1));
+						List<KeyValuePair<int, float>> RAList = RAIndexes.ToList();
+						RAList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
+
+						for (int i = 0; i < 15 && i < RAList.Count; i++)
+						{
+							queue.Enqueue(new BFSNode(RAList[i].Key, distance + 1));
+							estimatedTrustMatrix[sourceUser, RAList[i].Key] = BasicTrustMetric(neighbourhoodDistance, distance + 1);
+						}
 					}
 				}
+
 			}
 
 			return estimatedTrustMatrix;
@@ -195,14 +113,15 @@ namespace TG
 
 		public static Matrix<float> BuildSaltonIndexTrustMatrix(Matrix<float> trustMatrix, int neighbourhoodDistance)
 		{
-			Matrix<float> estimatedTrustMatrix = trustMatrix.Clone();
+			Matrix<float> estimatedTrustMatrix = new Matrix<float>();
 			Matrix<float> saltonMatrix = new Matrix<float>();
 
 			float maxSalton = 0;
 
 			foreach (int sourceUser in trustMatrix.Rows)
 			{
-				BFSQueue queue = new BFSQueue(neighbourhoodDistance - 1);
+				BFSQueue queue = new BFSQueue(neighbourhoodDistance );
+				estimatedTrustMatrix.AddRow(sourceUser);
 
 				foreach (int trustedUser in trustMatrix[sourceUser])
 					queue.Enqueue(new BFSNode(trustedUser, 1));
@@ -213,22 +132,17 @@ namespace TG
 					int user = node.value;
 					int distance = node.distance;
 
-					if (trustMatrix.HasRow(user))
+					if (!estimatedTrustMatrix[sourceUser].Contains(user))
 					{
-						foreach (int neighbour in trustMatrix[user])
+						saltonMatrix[sourceUser, user] = saltonMatrix[user, sourceUser] = JaccardIndex(trustMatrix, sourceUser, user);
+
+						if (saltonMatrix[sourceUser, user] > 0.1f)
 						{
-							if (!trustMatrix[sourceUser].Contains(neighbour))
-							{
-								float saltonIndex;
-								if (!(saltonMatrix.HasRow(sourceUser) && saltonMatrix[sourceUser].Contains(neighbour)))
-									saltonMatrix[sourceUser, neighbour] = saltonMatrix[neighbour, sourceUser] = SaltonIndex(trustMatrix, sourceUser, neighbour);
+							estimatedTrustMatrix[sourceUser, user] = BasicTrustMetric(neighbourhoodDistance, distance);
 
-								saltonIndex = saltonMatrix[sourceUser, neighbour];
-								maxSalton = Math.Max(maxSalton, saltonIndex);
-
-								if (saltonIndex > 0.5f)
-									estimatedTrustMatrix[sourceUser, neighbour] = BasicTrustMetric(neighbourhoodDistance + 1, distance + 1);
-							}
+							if (trustMatrix.Rows.Contains(user))
+								foreach (int trustedUser in trustMatrix[user])
+									queue.Enqueue(new BFSNode(trustedUser, distance + 1));
 						}
 					}
 				}
@@ -243,9 +157,6 @@ namespace TG
 		{
 			Matrix<float> estimatedTrustMatrix = new Matrix<float>();
 			Matrix<float> jaccardMatrix = new Matrix<float>();
-
-			float maxJaccard = 0;
-			float minJaccard = 1;
 
 			foreach (int sourceUser in trustMatrix.Rows)
 			{
@@ -276,9 +187,6 @@ namespace TG
 					}
 				}
 			}
-
-			Console.WriteLine($"Max Jaccard: {maxJaccard}");
-			Console.WriteLine($"Min Jaccard: {minJaccard}");
 
 			return estimatedTrustMatrix;
 		}
@@ -317,45 +225,6 @@ namespace TG
 			}
 
 			return estimatedTrustMatrix;
-		}
-
-		public static Matrix<float> BuildResourceAllocationMatrix(Matrix<float> trustMatrix, int neighbourhoodDistance)
-		{
-			Matrix<float> estimatedMatrix = trustMatrix.Clone();
-
-			foreach (int sourceUser in trustMatrix.Rows)
-			{
-				BFSQueue queue = new BFSQueue(neighbourhoodDistance - 1);
-
-				foreach (int trustedUser in trustMatrix[sourceUser])
-					queue.Enqueue(new BFSNode(trustedUser, 1));
-
-				while (queue.Count() != 0)
-				{
-					BFSNode node = queue.Deque();
-					int user = node.value;
-					int distance = node.distance;
-
-					if (trustMatrix.HasRow(user))
-					{
-						foreach (int neighbour in trustMatrix[user])
-						{
-							if (!trustMatrix[sourceUser].Contains(neighbour))
-							{
-								float resourceAllocation = ResourceAllocationIndex(trustMatrix, sourceUser, neighbour);
-								if (resourceAllocation > 0)
-								{
-									estimatedMatrix[sourceUser, neighbour] = resourceAllocation;									
-								}
-							}
-						}
-					}
-					
-				}
-
-			}
-
-			return estimatedMatrix;
 		}
 
 		private static float BasicTrustMetric(int neighbourhoodDistance, int distance)
