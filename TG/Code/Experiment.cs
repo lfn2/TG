@@ -56,6 +56,9 @@ namespace TG
 			double totalErrors = 0;
 			double mae = 0;
 
+			int predictedRatings = 0;
+			int totalRatings = 0;
+
 			foreach (int user in ratingsMatrix.Rows)
 			{
 				List<int> userRatedItems = ratingsMatrix[user].ToList<int>();
@@ -63,6 +66,7 @@ namespace TG
 				{
 					int originalRating = ratingsMatrix[user, item];
 					ratingsMatrix.remove(user, item);
+					totalRatings++;
 
 					double predictedRating = Math.Round(RatingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));				
 					
@@ -74,6 +78,7 @@ namespace TG
 							predictedRating = 1;
 
 						ratings++;
+						predictedRatings++;
 						totalErrors += Math.Abs(predictedRating - originalRating);
 					}
 
@@ -82,6 +87,9 @@ namespace TG
 			}
 
 			mae = totalErrors / ratings;
+
+			double coverage = (double)predictedRatings / totalRatings;
+			Console.WriteLine($"Coverage: {coverage}");
 
 			return mae;
 		}
