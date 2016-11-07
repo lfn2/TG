@@ -123,8 +123,8 @@
   <data name="rating_data_file" xml:space="preserve">
     <value>rating_data.txt</value>
   </data>
-  <data name="ra_based_trust" xml:space="preserve">
-    <value>ra_based_trust_{0}</value>
+  <data name="resource_allocation" xml:space="preserve">
+    <value>resource_allocation_{0}_{1}</value>
   </data>
   <data name="resource_allocation_data_file" xml:space="preserve">
     <value>resource_allocation_{0}</value>
@@ -143,5 +143,8 @@
   </data>
   <data name="rebuild_trust_matrix" xml:space="preserve">
     <value>rebuild_trust_matrix_{0}</value>
+  </data>
+  <data name="linear_trust_matrix" xml:space="preserve">
+    <value>linear_trust_matrix_{0}</value>
   </data>
 </root>

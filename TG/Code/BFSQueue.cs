@@ -21,9 +21,15 @@ namespace TG.Code
 			this.maxDistance = maxDistance;
 		}
 
+		public void Enqueue(IEnumerable<BFSNode> nodes)
+		{
+			foreach (BFSNode node in nodes)
+				Enqueue(node);
+		}
+
 		public void Enqueue(BFSNode node)
 		{
-			if (!queueItems.Contains(node.value) && node.distance <= maxDistance)
+			if (!queueItems.Contains(node.value) && node.distance < maxDistance)
 			{
 				userQueue.Enqueue(node.value);
 				distanceQueue.Enqueue(node.distance);

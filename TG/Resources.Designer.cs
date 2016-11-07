@@ -88,11 +88,11 @@ namespace TG {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ra_based_trust_{0}.
+        ///   Looks up a localized string similar to linear_trust_matrix_{0}.
         /// </summary>
-        internal static string ra_based_trust {
+        internal static string linear_trust_matrix {
             get {
-                return ResourceManager.GetString("ra_based_trust", resourceCulture);
+                return ResourceManager.GetString("linear_trust_matrix", resourceCulture);
             }
         }
         
@@ -111,6 +111,15 @@ namespace TG {
         internal static string rebuild_trust_matrix {
             get {
                 return ResourceManager.GetString("rebuild_trust_matrix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to resource_allocation_{0}_{1}.
+        /// </summary>
+        internal static string resource_allocation {
+            get {
+                return ResourceManager.GetString("resource_allocation", resourceCulture);
             }
         }
         

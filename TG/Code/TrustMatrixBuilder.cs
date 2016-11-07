@@ -273,48 +273,7 @@ namespace TG
 			}
 
 			return estimatedTrustMatrix;
-		}
-
-		public static Matrix<float> BuildEstimatedTrustMatrix(Matrix<float> trustMatrix, int neighbourhoodDistance)
-		{
-			Matrix<float> estimatedTrustMatrix = new Matrix<float>();
-
-			foreach (int sourceUser in trustMatrix.Rows)
-			{
-				BFSQueue queue = new BFSQueue(neighbourhoodDistance);
-				estimatedTrustMatrix.AddRow(sourceUser);
-
-				foreach (int trustedUser in trustMatrix[sourceUser])
-					queue.Enqueue(new BFSNode(trustedUser, 1));
-
-				while (queue.Count() != 0)
-				{
-					BFSNode node = queue.Deque();
-					int user = node.value;
-					int distance = node.distance;
-
-					if (!estimatedTrustMatrix[sourceUser].Contains(user))
-					{
-						estimatedTrustMatrix[sourceUser, user] = BasicTrustMetric(neighbourhoodDistance, distance);
-
-						if (trustMatrix.Rows.Contains(user))
-							foreach (int trustedUser in trustMatrix[user])
-								queue.Enqueue(new BFSNode(trustedUser, distance + 1));
-					}
-					
-				}
-
-				if (estimatedTrustMatrix[sourceUser].Count() == 0)
-					estimatedTrustMatrix.remove(sourceUser);
-			}
-
-			return estimatedTrustMatrix;
-		}
-
-		private static float BasicTrustMetric(int neighbourhoodDistance, int distance)
-		{
-			return (float)(neighbourhoodDistance - distance + 1) / neighbourhoodDistance;
-		}
+		}		
 
 		private static float SaltonIndex(Matrix<float> matrix, int x, int y)
 		{
@@ -354,18 +313,7 @@ namespace TG
 			return jaccardIndex;
 		}
 
-		private static float ResourceAllocationIndex(Matrix<float> matrix, int x, int y)
-		{
-			float ra = 0;
-
-			foreach(int neighbour in matrix[x])
-			{
-				if (matrix.HasRow(y) && matrix[y].Contains(neighbour) && matrix.HasRow(neighbour))
-					ra += (float) 1 / matrix[neighbour].Count();
-			}
-
-			return ra;
-		}
+		
 
 		private static float CommonNeighbours(Matrix<float> matrix, int x, int y)
 		{

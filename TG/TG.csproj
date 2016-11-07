@@ -84,7 +84,6 @@
     <Compile Include="Code\Experiment.cs" />
     <Compile Include="Code\Matrix.cs" />
     <Compile Include="Code\RatingPredictor.cs" />
-    <Compile Include="Code\TrustMatrixBuilder.cs" />
     <Compile Include="Code\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
@@ -92,6 +91,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="TrustMetric\EMetric.cs" />
+    <Compile Include="TrustMetric\LinearTrustPropagation.cs" />
+    <Compile Include="TrustMetric\ResourceAllocation.cs" />
+    <Compile Include="TrustMetric\TrustMatrixBuilder.cs" />
+    <Compile Include="TrustMetric\TrustMatrixBuilderFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
