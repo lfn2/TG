@@ -6,9 +6,17 @@ namespace TG
 {
 	public class RatingPredictor
 	{
-		public static double PredictRating(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, int user, int item)
+
+		private Dictionary<int, double> usersAverageRatings;
+
+		public RatingPredictor()
 		{
-			float userAverageRatings = getUserAverageRatings(ratingsMatrix, user);
+			this.usersAverageRatings = new Dictionary<int, double>();
+		}
+
+		public double PredictRating(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, int user, int item)
+		{
+			double userAverageRatings = getUserAverageRatings(ratingsMatrix, user);
 
 			double numerator = 0;
 			double denominator = 0;
@@ -19,8 +27,8 @@ namespace TG
 				{
 					if (ratingsMatrix.Rows.Contains(neighbour) && ratingsMatrix[neighbour].Contains(item))
 					{
-						float weight = weightsMatrix[user, neighbour];
-						float neighbourAverageRating = getUserAverageRatings(ratingsMatrix, neighbour);
+						double weight = weightsMatrix[user, neighbour];
+						double neighbourAverageRating = getUserAverageRatings(ratingsMatrix, neighbour);
 						int neighbourItemRating = ratingsMatrix[neighbour, item];
 
 						numerator += weight * (neighbourItemRating - neighbourAverageRating);
@@ -36,21 +44,44 @@ namespace TG
 				predictedRating = userAverageRatings + (numerator / denominator);
 
 			return predictedRating;
+		}
+		
+		public Dictionary<int, double> CalculateUsersAverageRatings(Matrix<int> ratingsMatrix)
+		{
+			foreach (int user in ratingsMatrix.Rows)
+				getUserAverageRatings(ratingsMatrix, user);
+
+			Dictionary<int, double> ret = new Dictionary<int, double>();
+			foreach (int i in usersAverageRatings.Keys)
+				ret.Add(i, usersAverageRatings[i]);
+
+			return ret;
 		}		
 
-		public static float getUserAverageRatings(Matrix<int> ratingsMatrix, int user)
+		public void setUsersAverageRatings(Dictionary<int, double> averageRatings)
 		{
-			float averageRating = 0;
+			foreach (int i in averageRatings.Keys)
+				this.usersAverageRatings[i] = averageRatings[i];
+		}
 
-			if (ratingsMatrix.Rows.Contains(user) && ratingsMatrix[user].Count() > 0)
+		private double getUserAverageRatings(Matrix<int> ratingsMatrix, int user)
+		{
+			if (!this.usersAverageRatings.ContainsKey(user))
 			{
-				foreach (int item in ratingsMatrix[user])
-					averageRating += ratingsMatrix[user, item];
+				double averageRating = 0;
 
-				averageRating /= ratingsMatrix[user].Count();
+				if (ratingsMatrix.Rows.Contains(user) && ratingsMatrix[user].Count() > 0)
+				{
+					foreach (int item in ratingsMatrix[user])
+						averageRating += ratingsMatrix[user, item];
+
+					averageRating /= ratingsMatrix[user].Count();
+				}
+
+				this.usersAverageRatings[user] = averageRating;
 			}
 
-			return averageRating;
+			return this.usersAverageRatings[user];
 		}                   		
 
 	}

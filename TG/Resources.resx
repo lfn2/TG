@@ -147,4 +147,10 @@
   <data name="linear_trust_matrix" xml:space="preserve">
     <value>linear_trust_matrix_{0}</value>
   </data>
+  <data name="users_average_ratings" xml:space="preserve">
+    <value>users_average_ratings</value>
+  </data>
+  <data name="results" xml:space="preserve">
+    <value>results</value>
+  </data>
 </root>

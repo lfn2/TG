@@ -46,6 +46,11 @@ namespace TG
 			}
 		}
 
+		public Dictionary<int, T> GetRow(int row)
+		{
+			return _Matrix[row];
+		}
+
 		public void Set(int row, int col, T value)
 		{
 			if (!_Matrix.ContainsKey(row))

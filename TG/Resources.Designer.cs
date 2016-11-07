@@ -133,6 +133,15 @@ namespace TG {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to results.
+        /// </summary>
+        internal static string results {
+            get {
+                return ResourceManager.GetString("results", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to salton_based_trust_{0}.
         /// </summary>
         internal static string salton_based_trust {
@@ -147,6 +156,15 @@ namespace TG {
         internal static string trust_data_file {
             get {
                 return ResourceManager.GetString("trust_data_file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to users_average_ratings.
+        /// </summary>
+        internal static string users_average_ratings {
+            get {
+                return ResourceManager.GetString("users_average_ratings", resourceCulture);
             }
         }
     }

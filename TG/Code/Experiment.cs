@@ -9,7 +9,7 @@ namespace TG
 	public class Experiment
 	{
 
-		public static double MeanAbsoluteUserError(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix)
+		public static double MeanAbsoluteUserError(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, RatingPredictor ratingPredictor)
 		{
 			double usersMAE = 0;
 
@@ -24,7 +24,7 @@ namespace TG
 					int originalRating = ratingsMatrix[user, item];
 					ratingsMatrix.remove(user, item);
 
-					double predictedRating = Math.Round(RatingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));
+					double predictedRating = Math.Round(ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));
 
 					if (predictedRating > 0)
 					{
@@ -49,7 +49,7 @@ namespace TG
 			return maue;
 		}
 
-		public static double MeanAverageError(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix)
+		public static double MeanAverageError(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, RatingPredictor ratingPredictor)
 		{
 
 			int ratings = 0;
@@ -68,7 +68,7 @@ namespace TG
 					ratingsMatrix.remove(user, item);
 					totalRatings++;
 
-					double predictedRating = Math.Round(RatingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));				
+					double predictedRating = Math.Round(ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));				
 					
 					if (predictedRating > 0)
 					{
