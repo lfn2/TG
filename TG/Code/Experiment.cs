@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TG
@@ -24,7 +25,7 @@ namespace TG
 					int originalRating = ratingsMatrix[user, item];
 					ratingsMatrix.remove(user, item);
 
-					double predictedRating = Math.Round(ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));
+					double predictedRating = Math.Round(ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item, true));
 
 					if (predictedRating > 0)
 					{
@@ -68,8 +69,8 @@ namespace TG
 					ratingsMatrix.remove(user, item);
 					totalRatings++;
 
-					double predictedRating = Math.Round(ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item));				
-					
+					double predictedRating = Math.Round(ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, item, true));
+
 					if (predictedRating > 0)
 					{
 						if (predictedRating > 5)
@@ -88,8 +89,8 @@ namespace TG
 
 			mae = totalErrors / ratings;
 
-			double coverage = (double)predictedRatings / totalRatings;
-			Console.WriteLine($"Coverage: {coverage}");
+			//double coverage = (double)predictedRatings / totalRatings;
+			//Console.WriteLine($"Coverage: {coverage}");
 
 			return mae;
 		}

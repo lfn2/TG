@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ namespace TG.Code
 	public class TopKRecommendation
 	{
 		private readonly int moviesCount = 139739;
-		private readonly int testRatings = 301053;
+		private readonly int randomRatingsCount = 300;
 
 		private int topK;
 
@@ -25,29 +26,40 @@ namespace TG.Code
 
 		public void Evaluate(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, Matrix<int> maxRatings, RatingPredictor ratingPredictor)
 		{
+			int testRatings = 0;
 			long hits = 0;
+			int ratings = 0;
 
 			// First type parameter is the type of the source elements
 			// Second type parameter is the type of the thread-local variable (partition subtotal)
 
 			Parallel.ForEach(maxRatings.Rows, // source collection
-										() => 0, // method to initialize the local variable
-										(user, loop, localHits) => // method invoked by the loop on each iteration
+										() => new KeyValuePair<long, int>(0, 0), // method to initialize the local variable
+										(user, loop, pair) => // method invoked by the loop on each iteration
 										{
+											long localHits = 0;
+											int localTestRatings = 0;
 											foreach (int item in maxRatings[user])
 											{
 												List<KeyValuePair<int, double>> predictedRatings = PredictRatings(ratingsMatrix, weightsMatrix, ratingPredictor, user, item);
 
 												for (int i = 0; i < this.topK; i++)
 													if (predictedRatings[i].Key == item)
-														hits++;
+														localHits++;
+
+												localTestRatings++;
 											}
 
-											return localHits; // value to be passed to next iteration
+											return new KeyValuePair<long, int>(pair.Key + localHits, pair.Value + localTestRatings); // value to be passed to next iteration
 										},
 										// Method to be executed when each partition has completed.
 										// finalResult is the final value of subtotal for a particular partition.
-										(finalResult) => Interlocked.Add(ref hits, finalResult)
+										(pair) =>
+										 {
+											 Interlocked.Add(ref hits, pair.Key);
+											 Interlocked.Add(ref testRatings, pair.Value);
+											 Interlocked.Add(ref ratings, 100 * pair.Value);
+										 } 
 										);
 
 
@@ -71,25 +83,8 @@ namespace TG.Code
 			//							);
 			//}
 
-			Recall = (double) hits / this.testRatings;
+			Recall = (double)hits / testRatings;
 			Precision = Recall / topK;
-		}
-
-		private int GetUserHits(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, Matrix<int> maxRatings, RatingPredictor ratingPredictor)
-		{
-			int hits = 0;
-
-			foreach (int user in maxRatings.Rows)
-				foreach (int item in maxRatings[user])
-				{
-					List<KeyValuePair<int, double>> predictedRatings = PredictRatings(ratingsMatrix, weightsMatrix, ratingPredictor, user, item);
-
-					for (int i = 0; i < this.topK; i++)
-						if (predictedRatings[i].Key == i)
-							hits++;
-				}
-
-			return hits;
 		}
 
 		private List<KeyValuePair<int, double>> PredictRatings(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix, RatingPredictor ratingPredictor, int user, int item)
@@ -100,15 +95,16 @@ namespace TG.Code
 			randomItems.Add(item);
 
 			Random random = new Random();
-			while (randomItems.Count < 1001)
+			while (randomItems.Count < randomRatingsCount + 1)
 			{
 				int randomMovie = random.Next(this.moviesCount);
 				if (!ratingsMatrix[user].Contains(randomMovie))
 					randomItems.Add(randomMovie);
 			}
 
+
 			foreach (int i in randomItems)
-				predictions.Add(new KeyValuePair<int, double>(i, ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, i)));
+				predictions.Add(new KeyValuePair<int, double>(i, ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, i, false)));
 
 			List<KeyValuePair<int, double>> orderedPredictions = predictions.OrderByDescending(x => x.Value).ToList();
 
