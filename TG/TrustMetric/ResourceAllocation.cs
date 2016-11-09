@@ -33,7 +33,7 @@ namespace TG.TrustMetric
 			{
 				indexesList.Sort((pair1, pair2) => pair1.Value.CompareTo(pair2.Value));
 				if (topN < indexesList.Count)
-					indexesList.RemoveRange(topN.Value, indexesList.Count - topN.Value);
+					indexesList.RemoveRange(0, indexesList.Count - topN.Value);
 			}
 
 			int distance = node.distance + 1;

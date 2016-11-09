@@ -11,7 +11,7 @@ namespace TG.Code
 	public class TopKRecommendation
 	{
 		private readonly int moviesCount = 139739;
-		private readonly int randomRatingsCount = 300;
+		private readonly int randomRatingsCount = 1000;
 
 		private int topK;
 
@@ -95,13 +95,12 @@ namespace TG.Code
 			randomItems.Add(item);
 
 			Random random = new Random();
-			while (randomItems.Count < randomRatingsCount + 1)
+			while (randomItems.Count < randomRatingsCount)
 			{
 				int randomMovie = random.Next(this.moviesCount);
 				if (!ratingsMatrix[user].Contains(randomMovie))
 					randomItems.Add(randomMovie);
 			}
-
 
 			foreach (int i in randomItems)
 				predictions.Add(new KeyValuePair<int, double>(i, ratingPredictor.PredictRating(ratingsMatrix, weightsMatrix, user, i, false)));

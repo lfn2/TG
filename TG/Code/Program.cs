@@ -76,7 +76,7 @@ namespace TG
 				//Console.WriteLine($"Precision: {evaluator.Precision}");
 				//Console.WriteLine();
 
-				for (int propagationDistance = 2; propagationDistance <= 3; propagationDistance++)
+				for (int propagationDistance = 1; propagationDistance <= 3; propagationDistance++)
 				{
 					for (int metricInput = 1; metricInput <= 2; metricInput++)
 					{
@@ -145,7 +145,6 @@ namespace TG
 							}
 						}
 					}
-
 				}
 			}
 
@@ -213,14 +212,12 @@ namespace TG
 						countAll++;
 						int r = random.Next(100);
 						if (r == 2)
-						{
-							
+						{							
 							maxRatings[user, item] = 5;
 							count++;
 						}
 					}
 			}
-
 
 			return maxRatings;
 		}
