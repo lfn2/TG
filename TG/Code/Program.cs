@@ -19,134 +19,145 @@ namespace TG
 
 		static void Main(string[] args)
 		{
-			while (true)
+			//while (true)
+			//{
+			//Console.WriteLine("Choose your trust propagation metric");
+			//Console.WriteLine("1 - Linear Trust Propagation");
+			//Console.WriteLine("2 - Resource Allocation");
+
+			//int metricInput = Convert.ToInt32(Console.ReadLine());
+
+			//Console.WriteLine("Choose the propagation distance");
+
+			//int propagationDistance = Convert.ToInt32(Console.ReadLine());
+
+			//Console.WriteLine("Choose top N for trust propagation");
+			//int topN = Convert.ToInt32(Console.ReadLine());
+
+			//Console.WriteLine("Choose top K ecommendations");
+			//int topK = Convert.ToInt32(Console.ReadLine());
+
+			//EMetric metric = (EMetric)metricInput;
+
+			//Console.WriteLine("New Execution!");
+			//Console.WriteLine($"Metric: {metric.ToString()}");
+			//Console.WriteLine($"TopN: { topN }");
+			//Console.WriteLine($"TopK: {topK}");
+			//Console.WriteLine($"Propagation Distance: {propagationDistance}");
+
+			//Matrix<float> originalTrustMatrix = new Matrix<float>(Resources.trust_data_file);
+
+			//Console.WriteLine("Building estimated trust matrix...");
+			//Matrix<float> estimatedTrustMatrix = GetEstimatedTrustMatrix(originalTrustMatrix, metric, propagationDistance, topN);
+			//Console.WriteLine("Estimated trust matrix built");
+
+			//Matrix<int> ratingsMatrix = new Matrix<int>(Resources.rating_data_file);
+
+			//Matrix<int> maxRatings = GetMaxRatings(ratingsMatrix);
+			//maxRatings.WriteToFile("maxRatings");
+
+			//RatingPredictor ratingPredictor = new RatingPredictor();
+
+			//Dictionary<int, double> usersAverageRatings = GetUsersAverageRatings(ratingsMatrix, ratingPredictor);
+			//ratingPredictor.setUsersAverageRatings(usersAverageRatings);
+
+			//Stopwatch timer = new Stopwatch();
+			//timer.Start();
+
+			//Console.WriteLine("Running top k recommendation experiment...");
+			//TopKRecommendation evaluator = new TopKRecommendation(topK);
+			//evaluator.Evaluate(ratingsMatrix, estimatedTrustMatrix, maxRatings, ratingPredictor);
+
+			//timer.Stop();
+			//Console.WriteLine(timer.Elapsed);
+			//Console.WriteLine();
+
+			//Console.WriteLine($"Recall: {evaluator.Recall}");
+			//Console.WriteLine($"Precision: {evaluator.Precision}");
+			//Console.WriteLine();
+
+			for (int propagationDistance = 3; propagationDistance <= 3; propagationDistance++)
 			{
-				//Console.WriteLine("Choose your trust propagation metric");
-				//Console.WriteLine("1 - Linear Trust Propagation");
-				//Console.WriteLine("2 - Resource Allocation");
-
-				//int metricInput = Convert.ToInt32(Console.ReadLine());
-
-				//Console.WriteLine("Choose the propagation distance");
-
-				//int propagationDistance = Convert.ToInt32(Console.ReadLine());
-
-				//Console.WriteLine("Choose top N for trust propagation");
-				//int topN = Convert.ToInt32(Console.ReadLine());
-
-				//Console.WriteLine("Choose top K ecommendations");
-				//int topK = Convert.ToInt32(Console.ReadLine());
-
-				//EMetric metric = (EMetric)metricInput;
-
-				//Console.WriteLine("New Execution!");
-				//Console.WriteLine($"Metric: {metric.ToString()}");
-				//Console.WriteLine($"TopN: { topN }");
-				//Console.WriteLine($"TopK: {topK}");
-				//Console.WriteLine($"Propagation Distance: {propagationDistance}");
-
-				//Matrix<float> originalTrustMatrix = new Matrix<float>(Resources.trust_data_file);
-
-				//Console.WriteLine("Building estimated trust matrix...");
-				//Matrix<float> estimatedTrustMatrix = GetEstimatedTrustMatrix(originalTrustMatrix, metric, propagationDistance, topN);
-				//Console.WriteLine("Estimated trust matrix built");
-
-				//Matrix<int> ratingsMatrix = new Matrix<int>(Resources.rating_data_file);
-
-				//Matrix<int> maxRatings = GetMaxRatings(ratingsMatrix);
-				//maxRatings.WriteToFile("maxRatings");
-
-				//RatingPredictor ratingPredictor = new RatingPredictor();
-
-				//Dictionary<int, double> usersAverageRatings = GetUsersAverageRatings(ratingsMatrix, ratingPredictor);
-				//ratingPredictor.setUsersAverageRatings(usersAverageRatings);
-
-				//Stopwatch timer = new Stopwatch();
-				//timer.Start();
-
-				//Console.WriteLine("Running top k recommendation experiment...");
-				//TopKRecommendation evaluator = new TopKRecommendation(topK);
-				//evaluator.Evaluate(ratingsMatrix, estimatedTrustMatrix, maxRatings, ratingPredictor);
-
-				//timer.Stop();
-				//Console.WriteLine(timer.Elapsed);
-				//Console.WriteLine();
-
-				//Console.WriteLine($"Recall: {evaluator.Recall}");
-				//Console.WriteLine($"Precision: {evaluator.Precision}");
-				//Console.WriteLine();
-
-				for (int propagationDistance = 1; propagationDistance <= 3; propagationDistance++)
+				for (int metricInput = 2; metricInput <= 2; metricInput++)
 				{
-					for (int metricInput = 1; metricInput <= 2; metricInput++)
+					for (int n = 1; n < topNValues.Length; n++)
 					{
-						for (int n = 0; n < topNValues.Length; n++)
+						for (int k = 0; k < topKValues.Length; k++)
 						{
-							for (int k = 0; k < topKValues.Length; k++)									
+							int topN = topNValues[n];
+							int topK = topKValues[k];
+
+							//topN = 20;
+							//topK = 20;
+							//propagationDistance = 2;
+							//metricInput = 2;
+
+							EMetric metric = (EMetric)metricInput;
+
+							Console.WriteLine("New Execution!");
+							Console.WriteLine($"Metric: {metric.ToString()}");
+							Console.WriteLine($"TopN: { topN }");
+							Console.WriteLine($"TopK: {topK}");
+							Console.WriteLine($"Propagation Distance: {propagationDistance}");
+
+							Matrix<float> originalTrustMatrix = new Matrix<float>(Resources.trust_data_file);
+
+							Console.WriteLine("Building estimated trust matrix...");
+							Matrix<float> estimatedTrustMatrix = GetEstimatedTrustMatrix(originalTrustMatrix, metric, propagationDistance, topN);
+							Console.WriteLine("Estimated trust matrix built");
+
+							Matrix<int> originalRatingsMatrix = new Matrix<int>(Resources.rating_data_file);
+							Matrix<int> ratingsMatrix = new Matrix<int>(Resources.rating_data_file);
+
+							Matrix<int> maxRatings = GetMaxRatings(ratingsMatrix, estimatedTrustMatrix);
+							maxRatings.WriteToFile("maxRatings");
+
+							RatingPredictor ratingPredictor = new RatingPredictor();
+
+							Dictionary<int, double> usersAverageRatings = GetUsersAverageRatings(ratingsMatrix, ratingPredictor);
+							ratingPredictor.setUsersAverageRatings(usersAverageRatings);
+
+							Stopwatch timer = new Stopwatch();
+							timer.Start();
+
+							Console.WriteLine("Running top k recommendation experiment...");
+							TopKRecommendation evaluator = new TopKRecommendation(topK);
+							evaluator.Evaluate(ratingsMatrix, estimatedTrustMatrix, maxRatings, ratingPredictor);
+
+							timer.Stop();
+							Console.WriteLine(timer.Elapsed);
+							Console.WriteLine();
+
+							Console.WriteLine($"Recall: {evaluator.Recall}");
+							Console.WriteLine($"Precision: {evaluator.Precision}");
+							Console.WriteLine($"Predicted Ratings: { evaluator.RatingsPredicted}");
+							Console.WriteLine($"Rated items predicted: { evaluator.ItemsPredicted }");
+							Console.WriteLine($"Coverage: {evaluator.Coverage}");
+							//Console.WriteLine($"Mean Average Error: {Experiment.MeanAverageError(originalRatingsMatrix, estimatedTrustMatrix, ratingPredictor)}");
+							Console.WriteLine();
+
+							using (StreamWriter writer = new StreamWriter(Resources.results, true))
 							{
-								int topN = topNValues[n];
-								int topK = topKValues[k];
-
-								EMetric metric = (EMetric)metricInput;
-
-								Console.WriteLine("New Execution!");
-								Console.WriteLine($"Metric: {metric.ToString()}");
-								Console.WriteLine($"TopN: { topN }");
-								Console.WriteLine($"TopK: {topK}");
-								Console.WriteLine($"Propagation Distance: {propagationDistance}");
-
-								Matrix<float> originalTrustMatrix = new Matrix<float>(Resources.trust_data_file);
-
-								Console.WriteLine("Building estimated trust matrix...");
-								Matrix<float> estimatedTrustMatrix = GetEstimatedTrustMatrix(originalTrustMatrix, metric, propagationDistance, topN);
-								Console.WriteLine("Estimated trust matrix built");
-
-								Matrix<int> originalRatingsMatrix = new Matrix<int>(Resources.rating_data_file);
-								Matrix<int> ratingsMatrix = new Matrix<int>(Resources.rating_data_file);
-
-								Matrix<int> maxRatings = GetMaxRatings(ratingsMatrix);
-								maxRatings.WriteToFile("maxRatings");
-
-								RatingPredictor ratingPredictor = new RatingPredictor();
-
-								Dictionary<int, double> usersAverageRatings = GetUsersAverageRatings(ratingsMatrix, ratingPredictor);
-								ratingPredictor.setUsersAverageRatings(usersAverageRatings);
-
-								Stopwatch timer = new Stopwatch();
-								timer.Start();
-
-								Console.WriteLine("Running top k recommendation experiment...");
-								TopKRecommendation evaluator = new TopKRecommendation(topK);
-								evaluator.Evaluate(ratingsMatrix, estimatedTrustMatrix, maxRatings, ratingPredictor);
-
-								timer.Stop();
-								Console.WriteLine(timer.Elapsed);
-								Console.WriteLine();
-
-								Console.WriteLine($"Recall: {evaluator.Recall}");
-								Console.WriteLine($"Precision: {evaluator.Precision}");
-								//Console.WriteLine($"Mean Average Error: {Experiment.MeanAverageError(originalRatingsMatrix, estimatedTrustMatrix, ratingPredictor)}");
-								Console.WriteLine();
-
-								using (StreamWriter writer = new StreamWriter(Resources.results, true))
-								{
-									writer.WriteLine("-------------------------------------");
-									writer.WriteLine($"Metric: {metric.ToString()}");
-									writer.WriteLine($"TopN: { topN }");
-									writer.WriteLine($"TopK: {topK}");
-									writer.WriteLine($"Propagation Distance: {propagationDistance}");
-									writer.WriteLine();
-									writer.WriteLine($"Recall: {evaluator.Recall}");
-									writer.WriteLine($"Precision: {evaluator.Precision}");
-									writer.WriteLine($"Execution time: {timer.Elapsed}");
-									writer.WriteLine("----------------------------------------");
-									writer.WriteLine();
-								}								
+								writer.WriteLine("-------------------------------------");
+								writer.WriteLine($"Metric: {metric.ToString()}");
+								writer.WriteLine($"TopN: { topN }");
+								writer.WriteLine($"TopK: {topK}");
+								writer.WriteLine($"Propagation Distance: {propagationDistance}");
+								writer.WriteLine();
+								writer.WriteLine($"Recall: {evaluator.Recall}");
+								writer.WriteLine($"Precision: {evaluator.Precision}");
+								writer.WriteLine($"Predicted Ratings: { evaluator.RatingsPredicted}");
+								writer.WriteLine($"Rated items predicted: { evaluator.ItemsPredicted }");
+								writer.WriteLine($"Coverage: {evaluator.Coverage}");
+								writer.WriteLine($"Execution time: {timer.Elapsed}");
+								writer.WriteLine("----------------------------------------");
+								writer.WriteLine();
 							}
 						}
 					}
 				}
 			}
+			//}
 
 		}
 
@@ -195,7 +206,7 @@ namespace TG
 			return dict;
 		}
 
-		private static Matrix<int> GetMaxRatings(Matrix<int> ratingsMatrix)
+		private static Matrix<int> GetMaxRatings(Matrix<int> ratingsMatrix, Matrix<float> weightsMatrix)
 		{
 			Matrix<int> maxRatings = new Matrix<int>();
 			Random random = new Random();
@@ -210,9 +221,9 @@ namespace TG
 					{
 						ratingsMatrix.remove(user, item);
 						countAll++;
-						int r = random.Next(100);
+						int r = random.Next(3);
 						if (r == 2)
-						{							
+						{
 							maxRatings[user, item] = 5;
 							count++;
 						}

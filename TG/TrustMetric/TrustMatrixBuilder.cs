@@ -32,7 +32,7 @@ namespace TG.TrustMetric
 				while (queue.Count() != 0)
 				{
 					BFSNode node = queue.Deque();
-					
+
 					if (this.originalTrustMatrix.HasRow(node.value))
 						VisitNode(queue, node, sourceUser, neighbourhoodDistance);
 				}
